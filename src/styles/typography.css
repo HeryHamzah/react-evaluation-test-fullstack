@@ -1,0 +1,32 @@
+/* Inter typography utilities */
+
+.inter-14 {
+  font-family: 'Inter', Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+  font-weight: 400;
+  font-style: normal;
+  font-size: 14px;
+}
+
+/* Variants if needed later */
+.inter-14-medium {
+  font-family: 'Inter', Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+  font-weight: 500;
+  font-style: normal;
+  font-size: 14px;
+}
+
+.inter-14-semibold {
+  font-family: 'Inter', Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+  font-weight: 600;
+  font-style: normal;
+  font-size: 14px;
+}
+
+/* Placeholder utilities */
+.placeholder-inter-14-medium::placeholder {
+  font-family: 'Inter', Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+  font-weight: 500;
+  font-style: normal;
+  font-size: 14px;
+}
+

@@ -1,0 +1,28 @@
+/* Color variables and utilities */
+
+:root {
+  --color-primary: #FF7900;
+  --color-placeholder: #7A7C81;
+  --color-secondary: #5B5D63;
+}
+
+/* Text color utilities */
+.text-primary-custom {
+  color: var(--color-primary) !important;
+}
+
+/* Background color utilities */
+.bg-primary-custom {
+  background-color: var(--color-primary) !important;
+}
+
+/* Placeholder color utility */
+.placeholder-color::placeholder {
+  color: var(--color-placeholder);
+}
+
+/* Secondary text color utility */
+.text-secondary-custom {
+  color: var(--color-secondary) !important;
+}
+

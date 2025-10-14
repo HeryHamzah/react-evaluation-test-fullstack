@@ -1,0 +1,78 @@
+/* Pusatkan card di tengah layar */
+.login-container {
+    height: 100vh; /* penuh 1 layar */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #ffffff; /* latar belakang putih bersih */
+    
+  }
+  
+  /* Password field with inline toggle icon */
+  .password-field {
+    position: relative;
+    width: 100%;
+  }
+
+  .password-field .form-control {
+    padding-right: 2.75rem; /* space for the eye icon */
+  }
+
+  .toggle-password {
+    position: absolute;
+    top: 50%;
+    right: 0.75rem;
+    transform: translateY(-50%);
+    background: transparent;
+    border: 0;
+    color: #6c757d;
+    padding: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+  }
+
+  .toggle-password:focus {
+    outline: none;
+    box-shadow: none;
+  }
+
+  /* Posisi ikon warning Bootstrap agar tidak menumpuk dengan tombol eye */
+  .password-field .form-control.is-invalid {
+    background-position: center right 2.25rem; /* geser ikon warning ke kiri sedikit */
+    padding-right: 4.5rem; /* ruang untuk ikon warning + tombol eye */
+  }
+
+  /* Logo kiri atas */
+  .logo {
+    width: 137px;
+    align-self: flex-start;
+  }
+  
+  /* Tombol Sign In berwarna orange (Bootstrap variant) */
+  .btn.btn-orange {
+    background-color: #FF7900 !important;
+    border-color: #FF7900 !important;
+    color: #ffffff !important;
+    font-weight: 600;
+  }
+
+  .btn.btn-orange:hover,
+  .btn.btn-orange:focus,
+  .btn.btn-orange:active {
+    background-color: #e56f00 !important;
+    border-color: #e56f00 !important;
+    color: #ffffff !important;
+  }
+
+  .btn.btn-orange:disabled {
+    background-color: #FF7900 !important;
+    border-color: #FF7900 !important;
+    opacity: 0.65;
+  }
+  
+  /* 🟢 Tambahkan sedikit jarak dari bawah input ke pesan error */
+.invalid-feedback {
+    margin-top: 4px; /* jarak kecil biar tidak terlalu mepet */
+  }
