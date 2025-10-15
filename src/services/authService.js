@@ -5,7 +5,7 @@ export function login(email, password) {
       // simulasi delay 700ms
       setTimeout(() => {
         // contoh mock credential: email: user@example.com, password: password123
-        if (email === "user@example.com" && password === "password123") {
+        if (email === "hery@gmail.com" && password === "123456") {
           const token = "mock-jwt-token-123"; // nanti ganti dengan yang nyata
           const user = { id: 1, name: "Mock User", email };
           resolve({ token, user });
