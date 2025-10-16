@@ -1,0 +1,288 @@
+/* 
+  Styling untuk halaman Management User
+  Menggunakan style yang sama dengan ProductList
+*/
+
+/* Container utama */
+.user-list-container {
+  padding: 2rem 3rem;
+  background-color: #ffffff;
+  min-height: 100vh;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+/* Header Section */
+.user-header {
+  background-color: transparent;
+  padding: 0;
+  border-radius: 0;
+  margin-bottom: 2rem;
+  box-shadow: none;
+}
+
+.user-title {
+  font-size: 1.75rem;
+  font-weight: 600;
+  margin: 0;
+  color: #000000;
+}
+
+.user-subtitle {
+  font-size: 0.875rem;
+  color: #6c757d;
+  margin: 0.5rem 0 0 0;
+}
+
+.btn-add-user {
+  background-color: #ff6b2c;
+  border: none;
+  color: white;
+  padding: 0.625rem 1.25rem;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: all 0.2s;
+  cursor: pointer;
+}
+
+.btn-add-user:hover {
+  background-color: #ff5a1a;
+}
+
+/* Table Section */
+.user-table {
+  width: 100%;
+  margin: 0;
+  border-collapse: collapse;
+}
+
+.user-table thead {
+  background-color: #f3f4f6;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.user-table th {
+  padding: 0.875rem 1rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: #6b7280;
+  text-align: left;
+  border-bottom: none;
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+.user-table td {
+  padding: 1rem;
+  font-size: 0.875rem;
+  color: #111827;
+  vertical-align: middle;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.user-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.user-table tbody tr:hover {
+  background-color: #fafafa;
+  transition: background-color 0.15s;
+}
+
+/* User Name Cell */
+.user-name-cell {
+  display: flex;
+  align-items: center;
+  gap: 0.875rem;
+}
+
+.user-avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #e5e7eb;
+  background-color: #f9fafb;
+}
+
+.user-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.user-name {
+  font-weight: 500;
+  color: #111827;
+}
+
+.user-email {
+  font-size: 0.8125rem;
+  color: #6b7280;
+}
+
+/* Status Badge - Aktif dengan check icon */
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.375rem 0.75rem;
+  border-radius: 16px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  border: 1px solid transparent;
+}
+
+.status-icon {
+  width: 14px;
+  height: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  font-size: 0.625rem;
+  font-weight: 700;
+}
+
+.status-aktif {
+  background-color: #dcfce7;
+  color: #15803d;
+  border-color: #bbf7d0;
+}
+
+.status-aktif .status-icon {
+  background-color: #22c55e;
+  color: white;
+}
+
+/* Status Badge - Nonaktif dengan XCircle icon */
+.status-nonaktif {
+  background-color: #E7EAF0;
+  color: #000000;
+  border-color: #C0C5CC;
+}
+
+.status-icon-x {
+  color: #000000;
+}
+
+/* Responsive Design */
+@media (max-width: 1200px) {
+  .filter-row {
+    flex-wrap: wrap;
+  }
+  
+  .search-box {
+    flex: 1 1 200px;
+  }
+}
+
+@media (max-width: 992px) {
+  .user-list-container {
+    padding: 1.5rem 1rem;
+  }
+  
+  .user-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .header-actions {
+    width: 100%;
+    margin-top: 1rem;
+  }
+  
+  .filter-row {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+  
+  .search-box {
+    width: 100%;
+    flex: 1 1 100%;
+  }
+  
+  .sort-section {
+    width: 100%;
+    margin-left: 0;
+  }
+}
+
+@media (max-width: 768px) {
+  .user-list-container {
+    padding: 1rem;
+  }
+  
+  .user-title {
+    font-size: 1.5rem;
+  }
+  
+  .user-table {
+    font-size: 0.8125rem;
+  }
+  
+  .user-table th,
+  .user-table td {
+    padding: 0.875rem 0.75rem;
+  }
+  
+  .user-avatar {
+    width: 40px;
+    height: 40px;
+  }
+  
+  .pagination-section {
+    flex-direction: column;
+    gap: 1rem;
+    align-items: center;
+  }
+  
+  /* Horizontal scroll untuk table di mobile */
+  .table-container {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  .user-table {
+    min-width: 800px;
+  }
+}
+
+@media (max-width: 576px) {
+  .user-list-container {
+    padding: 1rem 0.75rem;
+  }
+  
+  .user-title {
+    font-size: 1.25rem;
+  }
+  
+  .header-actions {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  
+  .btn-add-user {
+    width: 100%;
+    justify-content: center;
+  }
+  
+  .filter-section {
+    padding: 1rem;
+  }
+  
+  .pagination-controls {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  
+  .page-button {
+    min-width: 36px;
+    padding: 0.5rem 0.625rem;
+  }
+}

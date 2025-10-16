@@ -1,41 +1,23 @@
 import React, { useState, useEffect } from 'react';
-import { Dropdown } from 'react-bootstrap';
-import { PiMagnifyingGlass } from 'react-icons/pi';
+import { PiMagnifyingGlass, PiXCircleFill } from 'react-icons/pi';
 import Navbar from '../components/Navbar';
-import ProductModal from '../components/ProductModal';
-import ProductDetailModal from '../components/ProductDetailModal';
+import UserDetailModal from '../components/UserDetailModal';
+import UserModal from '../components/UserModal';
 import SuccessModal from '../components/SuccessModal';
 import SelectWithIcon from '../components/SelectWithIcon';
-import productService from '../services/productService';
-import { categories, statuses } from '../data/mockProducts';
-import '../styles/ProductList.css';
-import  ProductActions  from '../components/ProductActions';
+import userService from '../services/userService';
+import { userStatuses } from '../data/mockUsers';
+import '../styles/UserList.css';
+import UserActions from '../components/UserActions';
 import SortOrderButton from '../components/SortOrder';
 
-
-
 /**
- * Component ProductList - Halaman Daftar Produk
- * 
- * KONSEP UNTUK FLUTTER DEVELOPER:
- * 
- * 1. useState = mirip dengan State management (setState di StatefulWidget)
- *    Setiap kali state berubah, component akan re-render (build ulang)
- * 
- * 2. useEffect = mirip dengan lifecycle methods
- *    - useEffect tanpa dependency = componentDidMount + componentDidUpdate
- *    - useEffect dengan [] = componentDidMount (hanya sekali)
- *    - useEffect dengan [dep] = dijalankan ketika dep berubah
- * 
- * 3. Component ini seperti StatefulWidget di Flutter
- *    Return statement mirip dengan build() method
+ * Component UserList - Halaman Management User
  */
-const ProductList = () => {
+const UserList = () => {
   
   // STATE MANAGEMENT
-  // Mirip dengan variabel state di StatefulWidget Flutter
-  
-  const [products, setProducts] = useState([]); // List produk
+  const [users, setUsers] = useState([]); // List user
   const [loading, setLoading] = useState(false); // Loading indicator
   const [error, setError] = useState(null); // Error state
   
@@ -47,17 +29,15 @@ const ProductList = () => {
   
   // State untuk filter dan search
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('Semua Kategori');
   const [selectedStatus, setSelectedStatus] = useState('Semua Status');
   
   // State untuk sorting
-  const [sortBy, setSortBy] = useState('nama');
   const [sortOrder, setSortOrder] = useState('asc'); // 'asc' atau 'desc'
   
   // State untuk modal
   const [showModal, setShowModal] = useState(false);
   const [modalMode, setModalMode] = useState('add'); // 'add' atau 'edit'
-  const [selectedProduct, setSelectedProduct] = useState(null);
+  const [selectedUser, setSelectedUser] = useState(null);
   
   // State untuk detail modal
   const [showDetailModal, setShowDetailModal] = useState(false);
@@ -69,34 +49,30 @@ const ProductList = () => {
   
   /**
    * useEffect untuk fetch data ketika filter/sort/page berubah
-   * Mirip dengan addListener di Flutter atau watch di Provider
    */
   useEffect(() => {
-    fetchProducts();
+    fetchUsers();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentPage, searchQuery, selectedCategory, selectedStatus, sortBy, sortOrder]);
+  }, [currentPage, searchQuery, selectedStatus, sortOrder]);
   
   /**
-   * Function untuk fetch products dari service
-   * Mirip dengan method async di Flutter untuk fetch data dari repository
+   * Function untuk fetch users dari service
    */
-  const fetchProducts = async () => {
+  const fetchUsers = async () => {
     try {
       setLoading(true);
       setError(null);
       
-      const result = await productService.getProducts({
+      const result = await userService.getUsers({
         page: currentPage,
         limit: itemsPerPage,
         search: searchQuery,
-        kategori: selectedCategory,
         status: selectedStatus,
-        sortBy: sortBy,
         sortOrder: sortOrder
       });
       
       if (result.success) {
-        setProducts(result.data);
+        setUsers(result.data);
         setTotalPages(result.pagination.totalPages);
         setTotalItems(result.pagination.totalItems);
       } else {
@@ -113,7 +89,6 @@ const ProductList = () => {
   
   /**
    * Handler untuk search
-   * Menggunakan debouncing untuk performa lebih baik
    */
   const handleSearch = (e) => {
     const value = e.target.value;
@@ -129,24 +104,24 @@ const ProductList = () => {
   };
   
   /**
-   * Handler untuk buka modal tambah produk
+   * Handler untuk buka modal tambah user
    */
-  const handleAddProduct = () => {
+  const handleAddUser = () => {
     setModalMode('add');
-    setSelectedProduct(null);
+    setSelectedUser(null);
     setShowModal(true);
   };
   
   /**
-   * Handler untuk buka modal detail produk
+   * Handler untuk buka modal detail user
    */
-  const handleViewDetail = (product) => {
-    setSelectedProduct(product);
+  const handleViewDetail = (user) => {
+    setSelectedUser(user);
     setShowDetailModal(true);
   };
 
   /**
-   * Handler untuk buka modal edit produk dari detail
+   * Handler untuk buka modal edit user dari detail
    */
   const handleEditFromDetail = () => {
     setShowDetailModal(false);
@@ -155,39 +130,39 @@ const ProductList = () => {
   };
 
   /**
-   * Handler untuk buka modal edit produk langsung
+   * Handler untuk buka modal edit user langsung
    */
-  const handleEditProduct = (product) => {
+  const handleEditUser = (user) => {
     setModalMode('edit');
-    setSelectedProduct(product);
+    setSelectedUser(user);
     setShowModal(true);
   };
   
   /**
-   * Handler untuk save produk (add/edit)
+   * Handler untuk save user (add/edit)
    */
-  const handleSaveProduct = async (productData) => {
+  const handleSaveUser = async (userData) => {
     try {
       setLoading(true);
       
       let result;
       if (modalMode === 'add') {
-        result = await productService.createProduct(productData);
+        result = await userService.createUser(userData);
       } else {
-        result = await productService.updateProduct(selectedProduct.id, productData);
+        result = await userService.updateUser(selectedUser.id, userData);
       }
       
       if (result.success) {
         setShowModal(false);
-        fetchProducts(); // Refresh data
+        fetchUsers(); // Refresh data
         
         // Tampilkan success modal
         if (modalMode === 'add') {
           setSuccessTitle('Berhasil Ditambah!');
-          setSuccessMessage('Produk baru berhasil disimpan dan sekarang muncul di daftar produk.');
+          setSuccessMessage('User baru berhasil disimpan dan sekarang muncul di daftar user.');
         } else {
           setSuccessTitle('Berhasil Diperbarui!');
-          setSuccessMessage('Perubahan produk berhasil disimpan dan telah diperbarui di daftar produk.');
+          setSuccessMessage('Perubahan user berhasil disimpan dan telah diperbarui di daftar user.');
         }
         setShowSuccessModal(true);
       } else {
@@ -203,66 +178,37 @@ const ProductList = () => {
   };
   
   /**
-   * Handler untuk ubah status produk
+   * Handler untuk ubah status user
    */
-  const handleUpdateStatus = (product) => {
-    // Cycle through statuses: aktif -> menipis -> nonaktif -> aktif
-    const statusCycle = {
-      'aktif': 'menipis',
-      'menipis': 'nonaktif',
-      'nonaktif': 'aktif'
-    };
+  const handleUpdateStatus = (user) => {
+    // Toggle status: aktif <-> nonaktif
+    const newStatus = user.status === 'aktif' ? 'nonaktif' : 'aktif';
     
-    const newStatus = statusCycle[product.status] || 'aktif';
-    
-    const updatedProduct = {
-      ...product,
+    const updatedUser = {
+      ...user,
       status: newStatus
     };
     
     // Update menggunakan modal (atau bisa langsung update)
-    setSelectedProduct(updatedProduct);
+    setSelectedUser(updatedUser);
     setModalMode('edit');
     setShowModal(true);
   };
-  
-  /**
-   * Handler untuk update stock produk
-   */
-  const handleUpdateStock = async (productId, newStock) => {
-    try {
-      setLoading(true);
-      const result = await productService.updateProduct(productId, { stok: newStock });
-      
-      if (result.success) {
-        fetchProducts(); // Refresh data
-        // Update selected product untuk detail modal
-        setSelectedProduct(prev => ({ ...prev, stok: newStock }));
-      } else {
-        alert('Error: ' + result.error);
-      }
-    } catch (err) {
-      alert('Terjadi kesalahan saat memperbarui stok');
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   /**
-   * Handler untuk hapus produk
+   * Handler untuk hapus user
    */
-  const handleDeleteProduct = async (productId) => {
-    if (!window.confirm('Apakah Anda yakin ingin menghapus produk ini?')) {
+  const handleDeleteUser = async (userId) => {
+    if (!window.confirm('Apakah Anda yakin ingin menghapus user ini?')) {
       return;
     }
     
     try {
       setLoading(true);
-      const result = await productService.deleteProduct(productId);
+      const result = await userService.deleteUser(userId);
       
       if (result.success) {
-        fetchProducts();
+        fetchUsers();
         alert(result.message);
       } else {
         alert('Error: ' + result.error);
@@ -277,28 +223,36 @@ const ProductList = () => {
   };
   
   /**
-   * Format harga ke Rupiah
+   * Format tanggal
    */
-  const formatRupiah = (value) => {
-    return new Intl.NumberFormat('id-ID', {
-      style: 'decimal',
-      minimumFractionDigits: 0
-    }).format(value);
+  const formatTanggal = (tanggal) => {
+    const date = new Date(tanggal);
+    return date.toLocaleDateString('id-ID', {
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric'
+    });
   };
   
   /**
-   * Render status badge dengan check circle icon
+   * Render status badge dengan icon berbeda untuk nonaktif
    */
   const renderStatusBadge = (status) => {
-    const statusClass = `status-badge status-${status}`;
-    const statusText = status.charAt(0).toUpperCase() + status.slice(1);
-    
-    return (
-      <span className={statusClass}>
-        <span className="status-icon">✓</span>
-        {statusText}
-      </span>
-    );
+    if (status === 'aktif') {
+      return (
+        <span className="status-badge status-aktif">
+          <span className="status-icon">✓</span>
+          Active
+        </span>
+      );
+    } else {
+      return (
+        <span className="status-badge status-nonaktif">
+          <PiXCircleFill size={16} className="status-icon-x" />
+          Nonaktif
+        </span>
+      );
+    }
   };
   
   /**
@@ -329,32 +283,28 @@ const ProductList = () => {
    * Handle image error - set placeholder
    */
   const handleImageError = (e) => {
-    e.target.src = 'https://via.placeholder.com/48/e5e7eb/9ca3af?text=No+Image';
+    e.target.src = 'https://ui-avatars.com/api/?name=User&background=e5e7eb&color=9ca3af';
   };
   
   /**
    * RENDER / BUILD UI
-   * Mirip dengan method build() di Flutter Widget
    */
   return (
     <>
       {/* Navbar */}
       <Navbar />
       
-      <div className="product-list-container">
+      <div className="user-list-container">
         {/* Header Section */}
-        <div className="product-header d-flex justify-content-between align-items-start flex-wrap">
+        <div className="user-header d-flex justify-content-between align-items-start flex-wrap">
           <div>
-            <h1 className="product-title">Daftar Produk</h1>
-            <p className="product-subtitle">Lihat semua produk yang tersedia di inventaris.</p>
+            <h1 className="user-title">Management User</h1>
+            <p className="user-subtitle">Lihat semua produk yang tersedia di inventaris.</p>
           </div>
           <div className="header-actions">
-            <button className="btn-update-stock">
-              Perbarui Stok Produk
-            </button>
-            <button className="btn-add-product" onClick={handleAddProduct}>
+            <button className="btn-add-user" onClick={handleAddUser}>
               <span>+</span>
-              Tambah Produk
+              Tambah User
             </button>
           </div>
         </div>
@@ -374,48 +324,22 @@ const ProductList = () => {
               />
             </div>
             
-            {/* Filter Group */}
-            <div className="filter-group">
-              {/* Filter Kategori */}
-              <SelectWithIcon
-                value={selectedCategory}
-                onChange={(e) => {
-                  setSelectedCategory(e.target.value);
-                  setCurrentPage(1);
-                }}
-              >
-                {categories.map(cat => (
-                  <option key={cat} value={cat}>{cat}</option>
-                ))}
-              </SelectWithIcon>
-              
-              {/* Filter Status */}
-              <SelectWithIcon
-                value={selectedStatus}
-                onChange={(e) => {
-                  setSelectedStatus(e.target.value);
-                  setCurrentPage(1);
-                }}
-              >
-                {statuses.map(status => (
-                  <option key={status} value={status}>{status}</option>
-                ))}
-              </SelectWithIcon>
-            </div>
+            {/* Filter Status */}
+            <SelectWithIcon
+              value={selectedStatus}
+              onChange={(e) => {
+                setSelectedStatus(e.target.value);
+                setCurrentPage(1);
+              }}
+            >
+              {userStatuses.map(status => (
+                <option key={status} value={status}>{status}</option>
+              ))}
+            </SelectWithIcon>
             
             {/* Sort Section */}
             <div className="sort-section">
-              <span className="sort-label">Urutkan:</span>
-              <SelectWithIcon
-                value={sortBy}
-                onChange={(e) => setSortBy(e.target.value)}
-              >
-                <option value="nama">Nama Produk</option>
-                <option value="harga">Harga</option>
-                <option value="stok">Stok</option>
-                <option value="kategori">Kategori</option>
-              </SelectWithIcon>
-               <SortOrderButton sortOrder={sortOrder} handleToggleSortOrder={handleToggleSortOrder}/>
+              <SortOrderButton sortOrder={sortOrder} handleToggleSortOrder={handleToggleSortOrder}/>
             </div>
           </div>
         </div>
@@ -439,65 +363,61 @@ const ProductList = () => {
           {/* Table */}
           {!loading && !error && (
             <>
-              <table className="product-table table">
+              <table className="user-table table">
                 <thead>
                   <tr>
-                    <th>Nama Produk</th>
-                    <th>Kategori</th>
-                    <th>Stok</th>
-                    <th>Harga (Rp)</th>
+                    <th>Nama User</th>
+                    <th>No Telp</th>
+                    <th>Tanggal Dibuat</th>
                     <th>Status</th>
                     <th></th>
                   </tr>
                 </thead>
                 <tbody>
-                  {products.length === 0 ? (
+                  {users.length === 0 ? (
                     <tr>
-                      <td colSpan="6" className="text-center py-4">
-                        Tidak ada data produk
+                      <td colSpan="5" className="text-center py-4">
+                        Tidak ada data user
                       </td>
                     </tr>
                   ) : (
-                    products.map(product => (
-                      <tr key={product.id}>
-                        {/* Nama Produk dengan Gambar */}
+                    users.map(user => (
+                      <tr key={user.id}>
+                        {/* Nama User dengan Avatar */}
                         <td>
-                          <div className="product-name-cell">
+                          <div className="user-name-cell">
                             <img
-                              src={product.gambar}
-                              alt={product.nama}
-                              className="product-image"
+                              src={user.avatar}
+                              alt={user.nama}
+                              className="user-avatar"
                               onError={handleImageError}
                             />
-                            <span className="product-name">{product.nama}</span>
+                            <div className="user-info">
+                              <span className="user-name">{user.nama}</span>
+                              <span className="user-email">{user.email}</span>
+                            </div>
                           </div>
                         </td>
                         
-                        {/* Kategori */}
-                        <td>{product.kategori}</td>
+                        {/* No Telp */}
+                        <td>{user.noTelp}</td>
                         
-                        {/* Stok */}
-                        <td>{product.stok}</td>
-                        
-                        {/* Harga */}
-                        <td>{formatRupiah(product.harga)}</td>
+                        {/* Tanggal Dibuat */}
+                        <td>{formatTanggal(user.tanggalDibuat)}</td>
                         
                         {/* Status */}
-                        <td>{renderStatusBadge(product.status)}</td>
+                        <td>{renderStatusBadge(user.status)}</td>
                         
                         {/* Actions */}
                         <td>
                           <div className="action-cell">
-                          
-                            
-                            {/* Dropdown Menu */}
-                            <ProductActions
-          product={product}
-          onViewDetail={handleViewDetail}
-          onEdit={handleEditProduct}
-          onUpdateStatus={handleUpdateStatus}
-          onDelete={handleDeleteProduct}
-        />
+                            <UserActions
+                              user={user}
+                              onViewDetail={handleViewDetail}
+                              onEdit={handleEditUser}
+                              onUpdateStatus={handleUpdateStatus}
+                              onDelete={handleDeleteUser}
+                            />
                           </div>
                         </td>
                       </tr>
@@ -554,21 +474,20 @@ const ProductList = () => {
         </div>
       </div>
       
-      {/* Modal untuk View Detail Product */}
-      <ProductDetailModal
+      {/* Modal untuk View Detail User */}
+      <UserDetailModal
         show={showDetailModal}
         onHide={() => setShowDetailModal(false)}
-        product={selectedProduct}
+        user={selectedUser}
         onEdit={handleEditFromDetail}
-        onUpdateStock={handleUpdateStock}
       />
 
-      {/* Modal untuk Add/Edit Product */}
-      <ProductModal
+      {/* Modal untuk Add/Edit User */}
+      <UserModal
         show={showModal}
         onHide={() => setShowModal(false)}
-        onSave={handleSaveProduct}
-        product={selectedProduct}
+        onSave={handleSaveUser}
+        user={selectedUser}
         mode={modalMode}
       />
 
@@ -583,4 +502,4 @@ const ProductList = () => {
   );
 };
 
-export default ProductList;
+export default UserList;
