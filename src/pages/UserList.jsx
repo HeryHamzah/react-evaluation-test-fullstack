@@ -318,7 +318,7 @@ const UserList = () => {
               <input
                 type="text"
                 className="search-input"
-                placeholder="Cari produk"
+                placeholder="Cari user"
                 value={searchQuery}
                 onChange={handleSearch}
               />
