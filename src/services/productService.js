@@ -4,10 +4,34 @@
 import { mockProducts } from '../data/mockProducts';
 
 // Flag untuk toggle antara mock dan real API
-const USE_MOCK_DATA = true;
+const USE_MOCK_DATA = false;
 
-// Base URL untuk API (akan digunakan saat sudah connect ke real API)
-const API_BASE_URL = 'http://localhost:3000/api';
+// Base URL untuk API (gunakan proxy Vite di dev: /api -> 127.0.0.1:8000)
+const API_BASE_URL = '/api/v1';
+
+// Helper untuk normalisasi URL gambar dari API
+function normalizeImageUrl(gambarField) {
+  let url = null;
+  if (Array.isArray(gambarField) && gambarField.length > 0) {
+    url = gambarField[0];
+  } else if (typeof gambarField === 'string' && gambarField.trim() !== '') {
+    url = gambarField.trim();
+  }
+
+  // Fallback jika kosong/null
+  if (!url) return 'https://via.placeholder.com/50?text=Produk';
+
+  // Jika path relatif dari backend (mis. "/uploads/..." atau "uploads/..."), gunakan proxy vite
+  if (url.startsWith('/uploads')) {
+    return url; // akan diproxy oleh vite jika ada rule /uploads
+  }
+  if (url.startsWith('uploads/')) {
+    return '/' + url; // pastikan diawali slash
+  }
+
+  // Jika absolute URL, gunakan apa adanya
+  return url;
+}
 
 /**
  * STRATEGI UNTUK REPLACE MOCK DENGAN REAL API:
@@ -91,36 +115,72 @@ class ProductService {
       };
       
     } else {
-      // REAL API - Uncomment ketika sudah siap
-      /*
+      // REAL API
       try {
-        const queryParams = new URLSearchParams({
-          page,
-          limit,
-          search,
-          kategori,
-          status,
-          sortBy,
-          sortOrder
-        });
-        
-        const response = await fetch(`${API_BASE_URL}/products?${queryParams}`);
-        
-        if (!response.ok) {
-          throw new Error('Failed to fetch products');
+        const token = localStorage.getItem('token');
+        if (!token) {
+          return { success: false, error: 'Tidak ada token. Silakan login terlebih dahulu.' };
         }
-        
-        const data = await response.json();
-        return data;
-        
+
+        // Map sortBy dari UI ke field API
+        const sortByMap = {
+          nama: 'nama_produk',
+          harga: 'harga_satuan',
+          stok: 'stok',
+          kategori: 'kategori'
+        };
+        const sortByApi = sortByMap[sortBy] || 'nama_produk';
+
+        const queryParams = new URLSearchParams();
+        queryParams.append('page', String(page));
+        queryParams.append('limit', String(limit));
+        if (search && search.trim()) queryParams.append('search', search.trim());
+        if (kategori && kategori !== 'Semua Kategori') queryParams.append('kategori', kategori);
+        if (status && status !== 'Semua Status') queryParams.append('status', status);
+        if (sortByApi) queryParams.append('sort_by', sortByApi);
+        if (sortOrder) queryParams.append('sort_order', sortOrder);
+
+        const response = await fetch(`${API_BASE_URL}/products?${queryParams.toString()}`, {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        });
+
+        const data = await response.json().catch(() => null);
+        if (!response.ok) {
+          const serverMessage = (data && (data.detail || data.message)) || 'Gagal memuat produk';
+          return { success: false, error: serverMessage };
+        }
+
+        const items = Array.isArray(data?.items) ? data.items : [];
+        const mapped = items.map(item => ({
+          id: item.id,
+          nama: item.nama_produk,
+          kategori: item.kategori,
+          stok: item.stok,
+          harga: item.harga_satuan, // gunakan harga_satuan agar konsisten dengan sorting
+          status: item.status_produk,
+          gambar: normalizeImageUrl(item.gambar)
+        }));
+
+        return {
+          success: true,
+          data: mapped,
+          pagination: {
+            currentPage: data?.page ?? page,
+            totalPages: data?.pages ?? Math.ceil((data?.total || 0) / (data?.limit || limit)),
+            totalItems: data?.total ?? mapped.length,
+            itemsPerPage: data?.limit ?? limit
+          }
+        };
+
       } catch (error) {
         console.error('Error fetching products:', error);
         return {
           success: false,
-          error: error.message
+          error: error?.message || 'Terjadi kesalahan saat memuat data'
         };
       }
-      */
     }
   }
   
@@ -174,24 +234,98 @@ class ProductService {
       
     } else {
       // REAL API
-      /*
       try {
-        const response = await fetch(`${API_BASE_URL}/products`, {
+        const token = localStorage.getItem('token');
+        if (!token) {
+          return { success: false, error: 'Token tidak ditemukan. Silakan login ulang.' };
+        }
+
+        // Siapkan gambar: jika dataURL (base64) maka upload ke /upload/image untuk mendapatkan URL
+        let gambarUrls = [];
+        const gambarInput = productData?.gambar;
+
+        const isDataUrl = typeof gambarInput === 'string' && gambarInput.startsWith('data:image');
+        const isHttpUrl = typeof gambarInput === 'string' && (gambarInput.startsWith('http://') || gambarInput.startsWith('https://'));
+        const isRelativeUpload = typeof gambarInput === 'string' && (gambarInput.startsWith('/uploads') || gambarInput.startsWith('uploads/'));
+
+        if (isDataUrl) {
+          // Convert dataURL ke Blob
+          const [meta, b64data] = gambarInput.split(',');
+          const mimeMatch = /data:(.*?);base64/.exec(meta);
+          const mimeType = mimeMatch ? mimeMatch[1] : 'image/jpeg';
+          const byteCharacters = atob(b64data);
+          const byteNumbers = new Array(byteCharacters.length);
+          for (let i = 0; i < byteCharacters.length; i++) {
+            byteNumbers[i] = byteCharacters.charCodeAt(i);
+          }
+          const byteArray = new Uint8Array(byteNumbers);
+          const blob = new Blob([byteArray], { type: mimeType });
+          const ext = mimeType.split('/')[1] || 'jpg';
+          const fileName = `product_${Date.now()}.${ext}`;
+
+          const formData = new FormData();
+          formData.append('file', blob, fileName);
+
+          const uploadResp = await fetch(`${API_BASE_URL}/upload/image`, {
+            method: 'POST',
+            headers: {
+              Authorization: `Bearer ${token}`
+              // Jangan set Content-Type; biarkan browser set boundary untuk multipart/form-data
+            },
+            body: formData
+          });
+          if (!uploadResp.ok) {
+            const errText = await uploadResp.text().catch(() => 'Upload gagal');
+            throw new Error(`Gagal mengunggah gambar: ${errText}`);
+          }
+          const uploadData = await uploadResp.json();
+          if (uploadData?.url) {
+            gambarUrls = [uploadData.url];
+          }
+        } else if (isHttpUrl || isRelativeUpload) {
+          gambarUrls = [normalizeImageUrl(gambarInput)];
+        }
+
+        // Mapping field dari UI ke API
+        const payload = {
+          nama_produk: productData.nama,
+          kategori: productData.kategori,
+          deskripsi: productData.deskripsi || null,
+          harga_satuan: Number(productData.harga) || 0,
+          stok_awal: Number(productData.stok) || 0,
+          gambar: gambarUrls, // array of URL
+          status_produk: productData.status || 'aktif',
+          threshold_stok: Number(productData.produkMenipis) || 0,
+          diskon: Number(productData.diskon) || 0,
+          rating: Number(productData.rating) || 0,
+          jumlah_terjual: Number(productData.jumlah_terjual) || 0
+        };
+
+        const resp = await fetch(`${API_BASE_URL}/products`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`
           },
-          body: JSON.stringify(productData)
+          body: JSON.stringify(payload)
         });
-        
-        if (!response.ok) throw new Error('Failed to create product');
-        const data = await response.json();
-        return data;
-        
+
+        const respBody = await resp.json().catch(() => null);
+        if (!resp.ok) {
+          const serverMsg = (respBody && (respBody.detail || respBody.message)) || 'Gagal menambah produk';
+          throw new Error(serverMsg);
+        }
+
+        // Berikan struktur respon konsisten untuk UI
+        return {
+          success: true,
+          data: respBody,
+          message: 'Produk berhasil ditambahkan'
+        };
+
       } catch (error) {
-        return { success: false, error: error.message };
+        return { success: false, error: error.message || 'Terjadi kesalahan saat menambah produk' };
       }
-      */
     }
   }
   
