@@ -38,7 +38,12 @@ function LoginCard() {
       const { token, user } = await loginService(email, password);
       localStorage.setItem("token", token);
       localStorage.setItem("user", JSON.stringify(user));
-      navigate("/dashboard", { replace: true });
+      const role = (user?.role || "").toLowerCase();
+      if (role === "admin") {
+        navigate("/dashboard", { replace: true });
+      } else {
+        navigate("/catalog", { replace: true });
+      }
     } catch (err) {
       setErrors((prev) => ({ ...prev, general: err?.message || "Login gagal" }));
     } finally {

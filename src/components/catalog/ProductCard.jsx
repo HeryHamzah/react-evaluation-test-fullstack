@@ -21,7 +21,7 @@ const ProductCard = ({ product }) => {
     >
       <div className="position-relative overflow-hidden">
         <img
-          src={image}
+          src={image || '/placeholder.svg'}
           className="card-img-top"
           alt={name}
           style={{
@@ -29,6 +29,7 @@ const ProductCard = ({ product }) => {
             objectFit: 'cover',
             transition: 'transform 0.3s ease'
           }}
+          onError={(e) => { e.currentTarget.src = '/placeholder.svg'; }}
           onMouseOver={(e) => e.currentTarget.style.transform = 'scale(1.05)'}
           onMouseOut={(e) => e.currentTarget.style.transform = 'scale(1)'}
         />

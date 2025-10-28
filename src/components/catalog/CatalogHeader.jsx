@@ -2,9 +2,44 @@ import React from 'react';
 import { IoCaretDown } from 'react-icons/io5';
 import furnitureImage from '../../assets/furniture.jpg';
 import logo from '../../assets/logo.svg';
+import { getCurrentUser, logout } from '../../services/authService';
+import { useNavigate } from 'react-router-dom';
 
 const CatalogHeader = ({ onSearch }) => {
+  const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = React.useState('');
+  const [displayName, setDisplayName] = React.useState('Pengguna');
+  const [avatarUrl, setAvatarUrl] = React.useState(null);
+
+  const defaultAvatar = React.useMemo(() => {
+    const name = displayName || 'User';
+    return `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=e5e7eb&color=9ca3af`;
+  }, [displayName]);
+
+  const normalizeAvatarUrl = (url) => {
+    if (!url || typeof url !== 'string') return null;
+    const trimmed = url.trim();
+    if (!trimmed) return null;
+    if (trimmed.startsWith('/uploads')) return trimmed;
+    if (trimmed.startsWith('uploads/')) return '/' + trimmed;
+    return trimmed; // absolute URL
+  };
+
+  React.useEffect(() => {
+    let mounted = true;
+    getCurrentUser()
+      .then(user => {
+        if (mounted) {
+          if (user?.name) setDisplayName(user.name);
+          const normalized = normalizeAvatarUrl(user?.avatar);
+          if (normalized) setAvatarUrl(normalized);
+        }
+      })
+      .catch(() => {
+        // biarkan fallback
+      });
+    return () => { mounted = false; };
+  }, []);
 
   const handleSearch = (e) => {
     e.preventDefault();
@@ -91,19 +126,33 @@ const CatalogHeader = ({ onSearch }) => {
             style={{ border: 'none', padding: 0 }}
           >
             <IoCaretDown size={16} />
-            <span>user 01</span>
-            <div 
-              className="rounded-circle bg-white d-flex align-items-center justify-content-center"
-              style={{ width: '35px', height: '35px' }}
-            >
-              <i className="bi bi-person-fill text-dark"></i>
-            </div>
+            <span>{displayName}</span>
+            {avatarUrl ? (
+              <img
+                src={avatarUrl}
+                alt={displayName}
+                onError={(e) => { e.currentTarget.src = defaultAvatar; }}
+                className="rounded-circle"
+                style={{ width: '35px', height: '35px', objectFit: 'cover' }}
+              />
+            ) : (
+              <div 
+                className="rounded-circle bg-white d-flex align-items-center justify-content-center"
+                style={{ width: '35px', height: '35px' }}
+              >
+                <i className="bi bi-person-fill text-dark"></i>
+              </div>
+            )}
           </button>
           <ul className="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
             <li><a className="dropdown-item" href="#">Profile</a></li>
             <li><a className="dropdown-item" href="#">Settings</a></li>
             <li><hr className="dropdown-divider" /></li>
-            <li><a className="dropdown-item" href="#">Logout</a></li>
+            <li>
+              <button className="dropdown-item" onClick={() => { logout(); navigate('/login'); }}>
+                Logout
+              </button>
+            </li>
           </ul>
         </div>
       </div>

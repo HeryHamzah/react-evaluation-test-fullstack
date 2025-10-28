@@ -45,4 +45,39 @@ export function logout() {
   localStorage.removeItem("token");
   localStorage.removeItem("user");
 }
+
+// Get current authenticated user profile
+export async function getCurrentUser() {
+  try {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      throw new Error('Tidak ada token. Silakan login terlebih dahulu.');
+    }
+
+    const resp = await fetch(`${BASE_URL}/auth/me`, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+
+    const data = await resp.json().catch(() => null);
+    if (!resp.ok) {
+      const serverMessage = (data && (data.detail || data.message)) || 'Gagal memuat profil pengguna';
+      throw new Error(serverMessage);
+    }
+
+    const user = {
+      id: data?.id,
+      name: data?.nama || data?.name || '',
+      email: data?.email || '',
+      role: data?.role || 'user',
+      status: data?.status_user || 'aktif',
+      avatar: data?.photo_profile || null
+    };
+
+    // Sinkronkan ke localStorage agar komponen lain bisa pakai
+    localStorage.setItem('user', JSON.stringify(user));
+    return user;
+  } catch (err) {
+    throw new Error(err?.message || 'Gagal memuat profil pengguna');
+  }
+}
   

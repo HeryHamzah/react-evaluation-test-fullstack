@@ -19,7 +19,7 @@ function normalizeImageUrl(gambarField) {
   }
 
   // Fallback jika kosong/null
-  if (!url) return 'https://via.placeholder.com/50?text=Produk';
+  if (!url) return '/placeholder.svg';
 
   // Jika path relatif dari backend (mis. "/uploads/..." atau "uploads/..."), gunakan proxy vite
   if (url.startsWith('/uploads')) {

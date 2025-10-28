@@ -340,7 +340,7 @@ const ProductList = () => {
    * Handle image error - set placeholder
    */
   const handleImageError = (e) => {
-    e.target.src = 'https://via.placeholder.com/48/e5e7eb/9ca3af?text=No+Image';
+    e.target.src = '/placeholder.svg';
   };
   
   /**

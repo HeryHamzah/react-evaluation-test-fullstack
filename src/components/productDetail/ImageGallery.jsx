@@ -11,9 +11,18 @@ const ImageGallery = ({ images, productName }) => {
 
   if (!images || images.length === 0) {
     return (
-      <div className="bg-light d-flex align-items-center justify-content-center" 
-           style={{ height: '400px' }}>
-        <span className="text-muted">No image available</span>
+      <div className="main-image mb-3">
+        <img
+          src={'/placeholder.svg'}
+          alt={`${productName} - No Image`}
+          className="img-fluid rounded"
+          style={{ 
+            width: '100%', 
+            height: '400px', 
+            objectFit: 'cover',
+            cursor: 'default'
+          }}
+        />
       </div>
     );
   }
@@ -32,6 +41,7 @@ const ImageGallery = ({ images, productName }) => {
             objectFit: 'cover',
             cursor: 'pointer'
           }}
+          onError={(e) => { e.currentTarget.src = '/placeholder.svg'; }}
         />
       </div>
 
@@ -60,6 +70,7 @@ const ImageGallery = ({ images, productName }) => {
                 height: '100%', 
                 objectFit: 'cover'
               }}
+              onError={(e) => { e.currentTarget.src = '/placeholder.svg'; }}
             />
           </div>
         ))}
