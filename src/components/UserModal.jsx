@@ -296,7 +296,7 @@ const UserModal = ({ show, onHide, onSave, user, mode }) => {
           </button>
           <button type="submit" className="btn-submit">
             <PiCheckCircle size={18} />
-            Tambah
+            {mode === 'edit' ? 'Update' : 'Tambah'}
           </button>
         </Modal.Footer>
       </form>

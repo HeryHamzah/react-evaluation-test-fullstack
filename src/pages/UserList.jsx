@@ -9,6 +9,7 @@ import userService from '../services/userService';
 import { userStatuses } from '../data/mockUsers';
 import '../styles/UserList.css';
 import UserActions from '../components/UserActions';
+import StatusModal from '../components/StatusModal';
 import SortOrderButton from '../components/SortOrder';
 
 /**
@@ -46,6 +47,10 @@ const UserList = () => {
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
   const [successTitle, setSuccessTitle] = useState('');
+  // State untuk edit status
+  const [showStatusModal, setShowStatusModal] = useState(false);
+  const [statusUser, setStatusUser] = useState(null);
+  const [statusChoice, setStatusChoice] = useState('aktif');
   
   /**
    * useEffect untuk fetch data ketika filter/sort/page berubah
@@ -181,18 +186,32 @@ const UserList = () => {
    * Handler untuk ubah status user
    */
   const handleUpdateStatus = (user) => {
-    // Toggle status: aktif <-> nonaktif
-    const newStatus = user.status === 'aktif' ? 'nonaktif' : 'aktif';
-    
-    const updatedUser = {
-      ...user,
-      status: newStatus
-    };
-    
-    // Update menggunakan modal (atau bisa langsung update)
-    setSelectedUser(updatedUser);
-    setModalMode('edit');
-    setShowModal(true);
+    // Buka status modal dengan pilihan saat ini
+    setStatusUser(user);
+    setStatusChoice(user.status === 'nonaktif' ? 'nonaktif' : 'aktif');
+    setShowStatusModal(true);
+  };
+
+  const handleSubmitStatus = async (newStatus) => {
+    if (!statusUser) return;
+    if (!['aktif', 'nonaktif'].includes(newStatus)) return;
+    try {
+      setLoading(true);
+      const result = await userService.updateUserStatus(statusUser.id, newStatus);
+      if (result.success) {
+        setShowStatusModal(false);
+        fetchUsers();
+        // Update selected user jika detail sedang terbuka
+        setSelectedUser(prev => (prev && prev.id === statusUser.id) ? { ...prev, status: newStatus } : prev);
+      } else {
+        alert('Error: ' + result.error);
+      }
+    } catch (err) {
+      alert('Terjadi kesalahan saat mengubah status user');
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
   };
 
   /**
@@ -497,6 +516,15 @@ const UserList = () => {
         onHide={() => setShowSuccessModal(false)}
         title={successTitle}
         message={successMessage}
+      />
+
+      {/* Status Modal */}
+      <StatusModal
+        show={showStatusModal}
+        onHide={() => setShowStatusModal(false)}
+        onSubmit={(selected) => handleSubmitStatus(selected)}
+        currentStatus={statusChoice}
+        title={statusUser ? `Edit Status: ${statusUser.nama}` : 'Edit Status User'}
       />
     </>
   );

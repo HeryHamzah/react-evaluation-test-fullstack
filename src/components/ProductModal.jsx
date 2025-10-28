@@ -507,7 +507,7 @@ const ProductModal = ({ show, onHide, onSave, product, mode = 'add' }) => {
           </button>
           <button type="submit" className="btn-submit">
             <PiCheckCircle size={18} />
-            Tambah
+            {mode === 'edit' ? 'Update' : 'Tambah'}
           </button>
         </Modal.Footer>
       </form>

@@ -5,6 +5,7 @@ import Navbar from '../components/Navbar';
 import ProductModal from '../components/ProductModal';
 import ProductDetailModal from '../components/ProductDetailModal';
 import SuccessModal from '../components/SuccessModal';
+import StatusModal from '../components/StatusModal';
 import SelectWithIcon from '../components/SelectWithIcon';
 import productService from '../services/productService';
 import { categories, statuses } from '../data/mockProducts';
@@ -50,9 +51,9 @@ const ProductList = () => {
   const [selectedCategory, setSelectedCategory] = useState('Semua Kategori');
   const [selectedStatus, setSelectedStatus] = useState('Semua Status');
   
-  // State untuk sorting
-  const [sortBy, setSortBy] = useState('nama');
-  const [sortOrder, setSortOrder] = useState('asc'); // 'asc' atau 'desc'
+  // State untuk sorting (default: updated_at desc untuk data ter-update)
+  const [sortBy, setSortBy] = useState('updated_at');
+  const [sortOrder, setSortOrder] = useState('desc'); // 'asc' atau 'desc'
   
   // State untuk modal
   const [showModal, setShowModal] = useState(false);
@@ -66,6 +67,10 @@ const ProductList = () => {
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
   const [successTitle, setSuccessTitle] = useState('');
+  // State untuk edit status
+  const [showStatusModal, setShowStatusModal] = useState(false);
+  const [statusProduct, setStatusProduct] = useState(null);
+  const [statusChoice, setStatusChoice] = useState('aktif');
   
   /**
    * useEffect untuk fetch data ketika filter/sort/page berubah
@@ -205,25 +210,31 @@ const ProductList = () => {
   /**
    * Handler untuk ubah status produk
    */
-  const handleUpdateStatus = (product) => {
-    // Cycle through statuses: aktif -> menipis -> nonaktif -> aktif
-    const statusCycle = {
-      'aktif': 'menipis',
-      'menipis': 'nonaktif',
-      'nonaktif': 'aktif'
-    };
-    
-    const newStatus = statusCycle[product.status] || 'aktif';
-    
-    const updatedProduct = {
-      ...product,
-      status: newStatus
-    };
-    
-    // Update menggunakan modal (atau bisa langsung update)
-    setSelectedProduct(updatedProduct);
-    setModalMode('edit');
-    setShowModal(true);
+  const handleOpenStatusEditor = (product) => {
+    setStatusProduct(product);
+    setStatusChoice(product.status === 'nonaktif' ? 'nonaktif' : 'aktif');
+    setShowStatusModal(true);
+  };
+
+  const handleSubmitStatus = async (newStatus) => {
+    if (!statusProduct) return;
+    if (!['aktif', 'nonaktif'].includes(newStatus)) return;
+    try {
+      setLoading(true);
+      const result = await productService.updateProductStatus(statusProduct.id, newStatus);
+      if (result.success) {
+        setShowStatusModal(false);
+        fetchProducts();
+        setSelectedProduct(prev => (prev && prev.id === statusProduct.id) ? { ...prev, status: newStatus } : prev);
+      } else {
+        alert('Error: ' + result.error);
+      }
+    } catch (err) {
+      alert('Terjadi kesalahan saat mengubah status produk');
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
   };
   
   /**
@@ -410,6 +421,7 @@ const ProductList = () => {
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value)}
               >
+                <option value="updated_at">Update Terakhir</option>
                 <option value="nama">Nama Produk</option>
                 <option value="harga">Harga</option>
                 <option value="stok">Stok</option>
@@ -495,7 +507,7 @@ const ProductList = () => {
           product={product}
           onViewDetail={handleViewDetail}
           onEdit={handleEditProduct}
-          onUpdateStatus={handleUpdateStatus}
+          onUpdateStatus={handleOpenStatusEditor}
           onDelete={handleDeleteProduct}
         />
                           </div>
@@ -578,6 +590,15 @@ const ProductList = () => {
         onHide={() => setShowSuccessModal(false)}
         title={successTitle}
         message={successMessage}
+      />
+
+      {/* Status Modal */}
+      <StatusModal
+        show={showStatusModal}
+        onHide={() => setShowStatusModal(false)}
+        onSubmit={(selected) => handleSubmitStatus(selected)}
+        currentStatus={statusChoice}
+        title={statusProduct ? `Edit Status: ${statusProduct.nama}` : 'Edit Status Produk'}
       />
     </>
   );

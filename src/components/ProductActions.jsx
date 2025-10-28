@@ -1,5 +1,5 @@
 import { Dropdown } from "react-bootstrap";
-import { FiMoreVertical, FiEdit2, FiTrash2, FiRefreshCw, FiMoreHorizontal } from "react-icons/fi";
+import { FiEdit2, FiTrash2, FiMoreHorizontal, FiRefreshCw } from "react-icons/fi";
 
 function ProductActions({ product, onEdit, onViewDetail, onUpdateStatus, onDelete }) {
   return (
@@ -29,6 +29,7 @@ function ProductActions({ product, onEdit, onViewDetail, onUpdateStatus, onDelet
             <span>Edit</span>
           </Dropdown.Item>
 
+          {/* Ubah Status */}
           <Dropdown.Item onClick={() => onUpdateStatus(product)} className="d-flex align-items-center gap-2">
             <FiRefreshCw size={16} />
             <span>Ubah Status</span>
