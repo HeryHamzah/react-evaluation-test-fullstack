@@ -29,7 +29,7 @@ const ProductModal = ({ show, onHide, onSave, product, mode = 'add' }) => {
     harga: '0',
     unit: 'Unit',
     status: 'aktif',
-    produkMenipis: 8,
+    produkMenipis: null,
     gambar: ''
   });
   
@@ -71,7 +71,7 @@ const ProductModal = ({ show, onHide, onSave, product, mode = 'add' }) => {
         harga: formatCurrencyInput(String(product.harga || '0')),
         unit: product.unit || 'Unit',
         status: product.status || 'aktif',
-        produkMenipis: product.produkMenipis || 8,
+        produkMenipis: (product.produkMenipis ?? null),
         gambar: product.gambar || ''
       });
       setImagePreview(product.gambar || null);
@@ -85,7 +85,7 @@ const ProductModal = ({ show, onHide, onSave, product, mode = 'add' }) => {
         harga: formatCurrencyInput('0'),
         unit: 'Unit',
         status: 'nonaktif',
-        produkMenipis: 8,
+        produkMenipis: null,
         gambar: ''
       });
       setImagePreview(null);
@@ -228,7 +228,7 @@ const ProductModal = ({ show, onHide, onSave, product, mode = 'add' }) => {
       ...formData,
       stok: parseInt(formData.stok) || 0,
       harga: parseCurrencyToNumber(formData.harga),
-      produkMenipis: parseInt(formData.produkMenipis) || 8
+      produkMenipis: (Number.isNaN(parseInt(formData.produkMenipis)) ? null : parseInt(formData.produkMenipis))
     };
     
     onSave(dataToSave);
@@ -464,13 +464,15 @@ const ProductModal = ({ show, onHide, onSave, product, mode = 'add' }) => {
                         inputMode="numeric"
                         name="produkMenipis"
                         className={`form-input-custom ${errors.produkMenipis ? 'error' : ''}`}
-                        value={formData.produkMenipis}
+                        value={formData.produkMenipis ?? ''}
                         onChange={(e) => {
-                          const val = parseInt(e.target.value) || 0;
-                          setFormData(prev => ({ ...prev, produkMenipis: Math.max(0, val) }));
+                          const raw = e.target.value;
+                          const parsed = parseInt(raw);
+                          const nextVal = Number.isNaN(parsed) ? null : Math.max(0, parsed);
+                          setFormData(prev => ({ ...prev, produkMenipis: nextVal }));
                           if (errors.produkMenipis) setErrors(prev => ({ ...prev, produkMenipis: null }));
                         }}
-                        placeholder="8"
+                        placeholder="Masukan threshold"
                         autoComplete="off"
                       />
                       <div className="update-caret-actions">

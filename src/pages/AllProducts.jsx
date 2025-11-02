@@ -4,6 +4,7 @@ import { IoCaretDown } from 'react-icons/io5';
 import ProductGrid from '../components/catalog/ProductGrid';
 import furnitureService from '../services/furnitureService';
 import logo from '../assets/logo.svg';
+import { getCurrentUser, logout } from '../services/authService';
 
 const AllProducts = () => {
   const navigate = useNavigate();
@@ -12,6 +13,24 @@ const AllProducts = () => {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [isHeaderSticky, setIsHeaderSticky] = useState(false);
+
+  // Current user state for AppBar
+  const [displayName, setDisplayName] = useState('Pengguna');
+  const [avatarUrl, setAvatarUrl] = useState(null);
+
+  const defaultAvatar = React.useMemo(() => {
+    const name = displayName || 'User';
+    return `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=e5e7eb&color=9ca3af`;
+  }, [displayName]);
+
+  const normalizeAvatarUrl = (url) => {
+    if (!url || typeof url !== 'string') return null;
+    const trimmed = url.trim();
+    if (!trimmed) return null;
+    if (trimmed.startsWith('/uploads')) return trimmed;
+    if (trimmed.startsWith('uploads/')) return '/' + trimmed;
+    return trimmed; // absolute URL
+  };
 
   // Load semua produk saat component mount
   useEffect(() => {
@@ -30,6 +49,23 @@ const AllProducts = () => {
 
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  // Ambil profil pengguna saat mount untuk AppBar
+  useEffect(() => {
+    let mounted = true;
+    getCurrentUser()
+      .then(user => {
+        if (mounted) {
+          if (user?.name) setDisplayName(user.name);
+          const normalized = normalizeAvatarUrl(user?.avatar);
+          if (normalized) setAvatarUrl(normalized);
+        }
+      })
+      .catch(() => {
+        // biarkan fallback ke default avatar
+      });
+    return () => { mounted = false; };
   }, []);
 
   const loadProducts = async () => {
@@ -67,6 +103,11 @@ const AllProducts = () => {
 
   const handleBack = () => {
     navigate('/catalog');
+  };
+
+  const handleLogout = () => {
+    logout();
+    navigate('/login');
   };
 
   return (
@@ -146,19 +187,33 @@ const AllProducts = () => {
                 style={{ border: 'none', padding: 0 }}
               >
                 <IoCaretDown size={16} />
-                <span>user 01</span>
-                <div 
-                  className="rounded-circle bg-secondary d-flex align-items-center justify-content-center"
-                  style={{ width: '35px', height: '35px' }}
-                >
-                  <i className="bi bi-person-fill text-white"></i>
-                </div>
+                <span>{displayName}</span>
+                {avatarUrl ? (
+                  <img
+                    src={avatarUrl}
+                    alt={displayName}
+                    onError={(e) => { e.currentTarget.src = defaultAvatar; }}
+                    className="rounded-circle"
+                    style={{ width: '35px', height: '35px', objectFit: 'cover' }}
+                  />
+                ) : (
+                  <div 
+                    className="rounded-circle bg-secondary d-flex align-items-center justify-content-center"
+                    style={{ width: '35px', height: '35px' }}
+                  >
+                    <i className="bi bi-person-fill text-white"></i>
+                  </div>
+                )}
               </button>
               <ul className="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
-                <li><a className="dropdown-item" href="#">Profile</a></li>
-                <li><a className="dropdown-item" href="#">Settings</a></li>
+                <li><a className="dropdown-item" href="#/profile">Profile</a></li>
+                <li><a className="dropdown-item" href="#/settings">Settings</a></li>
                 <li><hr className="dropdown-divider" /></li>
-                <li><a className="dropdown-item" href="#">Logout</a></li>
+                <li>
+                  <button className="dropdown-item text-danger" type="button" onClick={handleLogout}>
+                    Logout
+                  </button>
+                </li>
               </ul>
             </div>
           </div>

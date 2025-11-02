@@ -393,6 +393,7 @@ GET /products?page=1&limit=20&kategori=Electronics&status=aktif&search=laptop&so
       "deskripsi": "Gaming laptop with RTX 4060, 16GB RAM, 512GB SSD",
       "harga_satuan": 15000000.0,
       "stok": 10,
+      "threshold_stok": 5,
       "status_produk": "aktif",
       "diskon": 10.0,
       "rating": 4.5,
@@ -408,6 +409,10 @@ GET /products?page=1&limit=20&kategori=Electronics&status=aktif&search=laptop&so
 }
 ```
 
+**Catatan:**
+
+- Field `status_produk` pada respons dievaluasi secara dinamis: jika status tersimpan `aktif` dan `stok <= threshold_stok`, maka nilai yang ditampilkan menjadi `menipis` tanpa mengubah data di database.
+
 ---
 
 ### GET /products/{product_id}
@@ -417,6 +422,10 @@ Get product by ID.
 **Headers:** `Authorization: Bearer <token>`
 
 **Response (200):** Full product object
+
+**Catatan:**
+
+- Field `status_produk` pada respons dievaluasi secara dinamis: jika status tersimpan `aktif` dan `stok <= threshold_stok`, maka nilai yang ditampilkan menjadi `menipis` tanpa mengubah data di database.
 
 ---
 

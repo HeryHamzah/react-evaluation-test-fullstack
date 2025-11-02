@@ -161,6 +161,7 @@ class ProductService {
             stok: item.stok,
             harga: item.harga_satuan, // gunakan harga_satuan agar konsisten dengan sorting
             status: item.status_produk,
+            produkMenipis: item.threshold_stok ?? null,
             deskripsi: item.deskripsi ?? null,
             gambar: normalizeImageUrl(item.gambar)
         }));
@@ -297,7 +298,13 @@ class ProductService {
           stok_awal: Number(productData.stok) || 0,
           gambar: gambarUrls, // array of URL
           status_produk: productData.status || 'aktif',
-          threshold_stok: Number(productData.produkMenipis) || 0,
+          threshold_stok: (
+            productData.produkMenipis === null ||
+            typeof productData.produkMenipis === 'undefined' ||
+            productData.produkMenipis === ''
+              ? null
+              : Number(productData.produkMenipis)
+          ),
           diskon: Number(productData.diskon) || 0,
           rating: Number(productData.rating) || 0,
           jumlah_terjual: Number(productData.jumlah_terjual) || 0
@@ -371,7 +378,9 @@ class ProductService {
         if (typeof productData.harga !== 'undefined') payload.harga_satuan = Number(productData.harga) || 0;
         if (typeof productData.stok !== 'undefined') payload.stok = Number(productData.stok) || 0;
         if (typeof productData.status !== 'undefined') payload.status_produk = productData.status;
-        if (typeof productData.produkMenipis !== 'undefined') payload.threshold_stok = Number(productData.produkMenipis) || 0;
+        if (typeof productData.produkMenipis !== 'undefined') {
+          payload.threshold_stok = (productData.produkMenipis === null ? null : Number(productData.produkMenipis));
+        }
         if (typeof productData.diskon !== 'undefined') payload.diskon = Number(productData.diskon) || 0;
         if (typeof productData.rating !== 'undefined') payload.rating = Number(productData.rating) || 0;
         if (typeof productData.jumlah_terjual !== 'undefined') payload.jumlah_terjual = Number(productData.jumlah_terjual) || 0;
