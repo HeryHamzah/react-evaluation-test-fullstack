@@ -296,6 +296,7 @@ const ProductList = () => {
       minimumFractionDigits: 0
     }).format(value);
   };
+
   
   /**
    * Render status badge dengan check circle icon

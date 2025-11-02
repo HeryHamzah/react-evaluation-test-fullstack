@@ -155,13 +155,14 @@ class ProductService {
 
         const items = Array.isArray(data?.items) ? data.items : [];
         const mapped = items.map(item => ({
-          id: item.id,
-          nama: item.nama_produk,
-          kategori: item.kategori,
-          stok: item.stok,
-          harga: item.harga_satuan, // gunakan harga_satuan agar konsisten dengan sorting
-          status: item.status_produk,
-          gambar: normalizeImageUrl(item.gambar)
+            id: item.id,
+            nama: item.nama_produk,
+            kategori: item.kategori,
+            stok: item.stok,
+            harga: item.harga_satuan, // gunakan harga_satuan agar konsisten dengan sorting
+            status: item.status_produk,
+            deskripsi: item.deskripsi ?? null,
+            gambar: normalizeImageUrl(item.gambar)
         }));
 
         return {
